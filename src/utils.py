@@ -41,4 +41,14 @@ def gaussian(z):
 def silverman(z):
     return 1/2 * np.exp(-abs(z)/np.sqrt(2)) * np.sin(abs(z)/np.sqrt(2) + np.pi/4)
 
+def eval_univariate(x, weights):
+    """Inner function for ECDF of one variable."""
+    sorter = x.argsort()
+    x = x[sorter]
+    weights = weights[sorter]
+    y = weights.cumsum()
+    y = y / y.max()
+    x = np.r_[x]
+    y = np.r_[y]
 
+    return y, x
