@@ -1,7 +1,12 @@
 
 # Bounds in Wasserstein Distance for Locally Stationary Processes
-This repository includes the implementation of our work **"Bounds in Wasserstein Distance for Locally Stationary Processes"**.
+This repository includes the implementation experiments in the paper
 
+> *Bounds in Wasserstein Distance for Locally Stationary Processes*
+> 
+> by Jan N. Tinio, Mokhtar Z. Alaya and Salim Bouzebda
+> arXiv link: TODO
+> 
 ## Introduction
 A brief introduction about the folders and files:
 * `data/`:
@@ -14,7 +19,6 @@ A brief introduction about the folders and files:
 
 ## Requirements
 Python: > 3.10
-
 
 ## Reproducibility
 For synthetic data analysis in Section
