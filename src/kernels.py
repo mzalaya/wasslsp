@@ -1,3 +1,6 @@
+# Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
+# License:
+
 import numpy as np
 import pandas as pd
 

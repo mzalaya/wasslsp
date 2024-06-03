@@ -1,3 +1,6 @@
+# Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
+# License:
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -301,9 +304,9 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
 
 if __name__ == "__main__":
 
-    tvAR_type = "gaussiantvAR(2)" # "gaussiantvAR(2)" "cauchytvAR(2)" # gaussiantvAR(2) tvQAR(1)
+    tvAR_type = "cauchytvAR(2)" #"gaussiantvAR(2)" # "gaussiantvAR(2)"  # gaussiantvAR(2) tvQAR(1)
     times_t = [150, 200, 250, 300, 350, 400, 450, 500]
-    times_T = [1000, 2000, 3000, 4000, 5000] #, 6000, 7000, 8000, 9000, 10000]
+    times_T = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 
     d = 2
     n_replications = 2000

@@ -1,3 +1,6 @@
+# Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
+# License:
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -25,22 +28,22 @@ from src.kernels import Kernel
 from scipy.stats import wasserstein_distance
 
 
-def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C, path_result, plot=True):
+def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C, path_result, plot=True):
     """
-    :param Y_t_T: (float)
-    :param d: (int), dimension
-    :param times_t: (list) of fixed times
-    :param times_T: (list), of sample size
-    :param n_replications: (int), number of replication
-    :param space_kernel: (str), space kernel
-    :param time_kernel: (str);
+    Main function for running the main function
+    :param tvAR_type: (str) Type of TVAR
+    :param times_t: (list),
+    :param times_T: (list),
+    :param d: (int) Dimensionality
+    :param n_replications: (int), Number of replications
+    :param space_kernel: (str), Type of space kernel
+    :param time_kernel: (str), Type of time kernel
+    :param zeta: (float),
+    :param C: (float),
+    :param path_result: (str), Path to result
+    :param plot: (bool), Whether to plot the result
     :return:
     """
-
-    phi_star = lambda u: 1.4 + np.sin(2 * np.pi * u)
-    psi_star = lambda u: 1.05
-    sigma_star = lambda u: 1.0
-    m_star = lambda u, x, y: 2 / (psi_star(u)) * np.cos(phi_star(u)) * x - 1 / (psi_star(u) ** 2) * y
 
     # -------------------------------------------------------------------------------------------------------------
     # 1. Construct of:
@@ -48,6 +51,7 @@ def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C
     # replications of the LSP {Y_{t,T}}
     #   -  X_dict (dictionary), its items are a matrices of shape (T, d).
     print("1. Constructiong of X_tvar_2_replications and X_dict")
+
     X_tvar_2_replications = {}
     X_dict = {}
 
@@ -56,18 +60,57 @@ def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C
         X_dict[f"T:{T}"] = {}
 
     for T in times_T:
-        for replication in range(n_replications):
-            t = 2
-            epsilon = np.random.normal(size=T)
-            X = np.zeros((T, d))
-            X_tvar_2_T = np.zeros(T)
-            while t <= T - 1:
-                X_tvar_2_T[t] = m_star(t/T, X_tvar_2_T[t - 1], X_tvar_2_T[t - 2]) + sigma_star(t/T) * epsilon[t]
-                X[t] = [X_tvar_2_T[t - 1], X_tvar_2_T[t - 2]]
-                t += 1
+        if tvAR_type == "gaussiantvAR(2)":
+            phi_star = lambda u: 1.4 + np.sin(2 * np.pi * u)
+            psi_star = lambda u: 1.05
+            sigma_star = lambda u: 1.0
+            m_star = lambda u, x, y: 2 / (psi_star(u)) * np.cos(phi_star(u)) * x - 1 / (psi_star(u) ** 2) * y
+            for replication in range(n_replications):
+                epsilon = np.random.normal(size=T)
+                X = np.zeros((T, d))
+                X_tvar_2_T = np.zeros(T)
+                t = 2
+                while t <= T - 1:
+                    X_tvar_2_T[t] = m_star(t/T, X_tvar_2_T[t - 1], X_tvar_2_T[t - 2]) + sigma_star(t/T) * epsilon[t]
+                    X[t] = [X_tvar_2_T[t - 1], X_tvar_2_T[t - 2]]
+                    t += 1
+                X_tvar_2_replications[f"T:{T}"][replication] = X_tvar_2_T
+                X_dict[f"T:{T}"][str(replication)] = X
 
-            X_tvar_2_replications[f"T:{T}"][replication] = X_tvar_2_T
-            X_dict[f"T:{T}"][str(replication)] = X
+        elif tvAR_type == "cauchytvAR(2)":
+            phi_star = lambda u: 1.8 * np.cos(1.5 - np.cos(2 * np.pi * u))
+            psi_star = lambda u: -0.81
+            sigma_star = lambda u: 1.0
+            m_star = lambda u, x, y: phi_star(u) * x + psi_star(u) * y
+            for replication in range(n_replications):
+                epsilon = np.random.standard_cauchy(size=T)
+                X = np.zeros((T, d))
+                X_tvar_2_T = np.zeros(T)
+                t = 2
+                while t <= T-1:
+                    X_tvar_2_T[t] = m_star(t/T, X_tvar_2_T[t-1], X_tvar_2_T[t-2]) + sigma_star(t/T) * epsilon[t]
+                    X[t] = [X_tvar_2_T[t-1], X_tvar_2_T[t-2]]
+                    t += 1
+                X_tvar_2_replications[f"T:{T}"][replication] = X_tvar_2_T
+                X_dict[f"T:{T}"][str(replication)] = X
+
+        elif tvAR_type == "tvQAR(1)":
+            phi_star = lambda u, U: (1.9 * U - 0.95) * u + (-1.9 * U + 0.95) * (1 - u) * U
+            psi_star = lambda u: 1.0
+            sigma_star = lambda u: 1.0
+            m_star = lambda u, U, x: phi_star(u, U) * x
+            for replication in range(n_replications):
+                t = 1
+                X_tvar_2_T = np.zeros(T)
+                epsilon = np.random.uniform(size=T)
+                X = np.zeros((T, d))
+                while t <= T - 1:
+                    X_tvar_2_T[t] = m_star(t/T, epsilon[t], X_tvar_2_T[t-1]) + sigma_star(t/T) * epsilon[t] - 0.5
+                    X[t] = [X_tvar_2_T[t-1]]
+                    t += 1
+
+                X_tvar_2_replications[f"T:{T}"][replication] = X_tvar_2_T
+                X_dict[f"T:{T}"][str(replication)] = X
 
     # -------------------------------------------------------------------------------------------------------------
     # 2. X_tvar_2 (dictionary), for a fixed t its contains n_replications of the process.
@@ -85,7 +128,7 @@ def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C
     for t in times_t:
         for replication in range(n_replications):
             for T in times_T:
-                z = X_tvar_2_replications[f"T:{T}"][replication][t - 1]
+                z = X_tvar_2_replications[f"T:{T}"][replication][t-1]
                 X_tvar_2[f"t:{t}_T:{T}"].append(z)
 
     for t in times_t:
@@ -119,7 +162,7 @@ def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C
         for t in times_t:
             for T in times_T:
                 gaussian_weights[f"t:{t}_T:{T}"][str(replication)] = \
-                    gaussian_kernel[f"T:{T}"].fit(X_dict[f"T:{T}"][str(replication)], t - 1)
+                    gaussian_kernel[f"T:{T}"].fit(X_dict[f"T:{T}"][str(replication)], t-1)
 
     # -------------------------------------------------------------------------------------------------------------
     # 5. Get weights
@@ -202,7 +245,7 @@ def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C
             wass_times_t[f"t:{t}"].append(wass_distances_empirical_meanNW[f"t:{t}_T:{T}"])
 
     import csv
-    with open(path_result+f"wass_distance{times_t}{times_T}_{n_replications}_spkernel_{space_kernel}_timekernel_{time_kernel}_zeta{zeta}_C{C}.csv", "w") as csv_file:
+    with open(path_result+f"Type{tvAR_type}_wass_distance{times_t}{times_T}_n_repl{n_replications}_spkernel_{space_kernel}_timekernel_{time_kernel}_zeta{zeta}_C{C}.csv", "w") as csv_file:
         writer = csv.writer(csv_file)
         for key, value in wass_times_t.items():
             writer.writerow([key, value])
@@ -211,45 +254,50 @@ def main(times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C
         # reader = csv.reader(csv_file)
         # mydict = dict(reader)
 
-    if plot:
-        print("8. Some plots")
-        plt.rcParams["figure.figsize"] = (8, 4)
-        colors = plt.cm.Set1(np.linspace(0, .5, len(times_t)))
-        markers = ['o', '>', 'D', 'X', "p"]
+    print("8. Some plots")
+    plt.rcParams["figure.figsize"] = (8, 4)
+    colors = plt.cm.Set1(np.linspace(0, .5, len(times_t)))
+    markers = ['o', '>', 'D', 'X', 'p', '*', 'H', 'v']
 
-        for i, t in zip(range(len(times_t)), times_t):
-            plt.plot(times_T, wass_times_t[f"t:{t}"], label=f"t:{t}", color=colors[i], marker=markers[i], markersize=6,
-                     lw=2)
-            plt.xlim(np.array(times_T).min(), np.array(times_T).max())
-            plt.title(r'Wasserstein distance $W_1\big(\hat{\pi}_t(\cdot|{x}), \pi_t^\star(\cdot|{x})\big)$')
-            plt.xlabel(r'Sample size ${T}$ ')
-            plt.ylabel(r'$W_1(\hat{\pi}_t(\cdot|{x})$')
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig(path_result+f"wass_distance{times_t}{times_T}_{n_replications}_spkernel_{space_kernel}_timekernel_{time_kernel}_zeta{zeta}_C{C}.pdf", dpi=150)
+    for i, t in zip(range(len(times_t)), times_t):
+        plt.plot(times_T, wass_times_t[f"t:{t}"], label=f"t:{t}",
+                 color=colors[i], marker=markers[i], markersize=6,
+                 lw=2)
+        plt.xlim(np.array(times_T).min(), np.array(times_T).max())
+        plt.title(r'Wasserstein distance $W_1\big(\hat{\pi}_t(\cdot|{x}), \pi_t^\star(\cdot|{x})\big)$')
+        plt.xlabel(r'Sample size ${T}$ ')
+        plt.ylabel(r'$W_1(\hat{\pi}_t(\cdot|{x})$')
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(path_result+f"Type{tvAR_type}_wass_distance_{times_t}{times_T}_n_repl{n_replications}_spkernel_{space_kernel}_timekernel_{time_kernel}_zeta{zeta}_C{C}.pdf", dpi=150)
 
     return wass_times_t
 
 if __name__ == "__main__":
 
-    times_t = [100, 200, 250, 300, 350, 400, 450, 500]
-    times_T = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+    tvAR_type = "cauchytvAR(2)"  # gaussiantvAR(2) tvQAR(1)
+    times_t = [150, 200, 250, 300, 350, 400, 450, 500]
+    times_T = [1000, 2000, 3000, 4000, 5000]  # , 6000, 7000, 8000, 9000, 10000]
 
     d = 2
-    n_replications = 500
-    space_kernel = "triangle"
-    time_kernel = "epanechnikov"
+    n_replications = 100
+    space_kernel = "silverman"  # "triangle" "gaussian" # "triangle"
+    time_kernel = "triangle"  # "epanechnikov"
     zeta = 0.4
 
-    C = 30
+    C = 1 / 20
     # path_result = "../results/"
     path_result = "/Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/results/"
+    main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C, path_result)
+    print("Done!")
 
     M = 5
     wass_distance_mcs = {}
+
     for m in range(M):
-        wass_distance_mcs[str(m)] = main(times_t, times_T, d,
-                                         n_replications, space_kernel, time_kernel, zeta, C, path_result, plot=False)
+        wass_distance_mcs[str(m)] = main(
+            tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C, path_result, plot=False,
+        )
 
     wass_distance_time_t_means = {}
     for t in times_t:
