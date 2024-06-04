@@ -8,12 +8,12 @@ import matplotlib
 from matplotlib import cm
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
-params = {'axes.labelsize': 8, # 12
-          'font.size': 8, # 12
-          'legend.fontsize': 8, # 12
-          'xtick.labelsize': 8, # 10
-          'ytick.labelsize': 8, # 10
-          'text.usetex': True,
+params = {'axes.labelsize': 12, # 12
+          'font.size': 12, # 12
+          'legend.fontsize': 12, # 12
+          'xtick.labelsize': 12, # 10
+          'ytick.labelsize': 12, # 10
+          # 'text.usetex': True,
           'figure.figsize': (10, 8)}
 plt.rcParams.update(params)
 
@@ -285,18 +285,31 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
         print("8. Some plots")
         fig = plt.figure(figsize=(8,4))
         # plt.rcParams["figure.figsize"] = (8, 4)
-        colors = plt.cm.Set1(np.linspace(0, .5, len(times_t)))
+        colors = plt.cm.Set1(np.linspace(0, 0., len(times_t)))
+        tab20_colors = [
+            '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
+            '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8', '#ffbb78',
+            '#98df8a', '#ff9896', '#c5b0d5', '#c49c94', '#f7b6d2', '#c7c7c7',
+            '#dbdb8d', '#9edae5'
+        ]
+
         markers = ['o', '>', 'D', 'X', 'p', '*', 'H', 'v']
 
         for i, t in zip(range(len(times_t)), times_t):
+            # plt.grid(True)
+            # plt.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+            plt.grid(which='major', color='#DDDDDD', linewidth=0.8)
+            plt.minorticks_on()
             plt.plot(times_T, wass_times_t[f"t:{t}"], label=f"t:{t}",
-                     color=colors[i], marker=markers[i], markersize=6,
-                     lw=2)
+                     color=tab20_colors[i], marker=markers[i], markersize=12,
+                     lw=3)
             plt.xlim(np.array(times_T).min(), np.array(times_T).max())
-            plt.title(r'Wasserstein distance $W_1\big(\hat{\pi}_t(\cdot|{x}), \pi_t^\star(\cdot|{x})\big)$')
-            plt.xlabel(r'Sample size ${T}$ ')
-            plt.ylabel(r'$W_1(\hat{\pi}_t(\cdot|{x})$')
-            plt.legend()
+            # plt.title(r'Wasserstein distance $W_1\big(\hat{\pi}_t(\cdot|{x}), \pi_t^\star(\cdot|{x})\big)$', fontsize=14)
+            plt.xlabel(r'Sample size T', fontsize=14) #${T}$ ', fontsize=14)
+            plt.ylabel(r'1D-Wasserstein distance', fontsize=14)# $W_1(\hat{\pi}_t(\cdot|{x})$',
+            plt.xticks(fontsize=12)
+            plt.yticks(fontsize=12)
+            plt.legend(loc="best")
             plt.tight_layout() # path_result +
             figname = f"Type{tvAR_type}_wass_distance_{times_t}{times_T}_n_repl{n_replications}_spkernel_{space_kernel}_timekernel_{time_kernel}_zeta{zeta}_C{C}.png"
             # plt.savefig(figname, dpi=150)
@@ -319,3 +332,6 @@ if __name__ == "__main__":
     path_result = "/Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/results/"
     main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C, path_result)
     print("Done!")
+
+
+# http://127.0.0.1:5000
