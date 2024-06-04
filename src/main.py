@@ -1,6 +1,11 @@
 # Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
 # License:
 
+import platform
+import sys
+if platform.system() == 'Linux':
+    sys.path.append('/volpilcam/user1x/users/alayaelm/Documents/research/wasslsp/src/')
+
 import warnings
 warnings.filterwarnings('ignore')
 
