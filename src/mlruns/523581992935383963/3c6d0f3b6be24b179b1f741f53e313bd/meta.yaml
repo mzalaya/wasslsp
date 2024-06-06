@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/523581992935383963/3c6d0f3b6be24b179b1f741f53e313bd/artifacts
+end_time: 1717593814606
+entry_point_name: ''
+experiment_id: '523581992935383963'
+lifecycle_stage: active
+run_id: 3c6d0f3b6be24b179b1f741f53e313bd
+run_name: wise-snail-552
+run_uuid: 3c6d0f3b6be24b179b1f741f53e313bd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717593737018
+status: 3
+tags: []
+user_id: mzalaya

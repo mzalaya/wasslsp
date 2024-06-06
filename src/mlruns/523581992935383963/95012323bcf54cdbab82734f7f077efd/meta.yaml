@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/523581992935383963/95012323bcf54cdbab82734f7f077efd/artifacts
+end_time: 1717626865426
+entry_point_name: ''
+experiment_id: '523581992935383963'
+lifecycle_stage: active
+run_id: 95012323bcf54cdbab82734f7f077efd
+run_name: classy-penguin-76
+run_uuid: 95012323bcf54cdbab82734f7f077efd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717626812681
+status: 3
+tags: []
+user_id: mzalaya

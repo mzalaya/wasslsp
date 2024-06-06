@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/f94da226c87c4e6b9802fccf4e97760f/artifacts
+end_time: 1717687004599
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: f94da226c87c4e6b9802fccf4e97760f
+run_name: nosy-ant-128
+run_uuid: f94da226c87c4e6b9802fccf4e97760f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717683431287
+status: 3
+tags: []
+user_id: mzalaya

@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/523581992935383963/4940025d8e6d49f695c5404f2fba8aaa/artifacts
+end_time: 1717606207911
+entry_point_name: ''
+experiment_id: '523581992935383963'
+lifecycle_stage: active
+run_id: 4940025d8e6d49f695c5404f2fba8aaa
+run_name: amazing-squirrel-404
+run_uuid: 4940025d8e6d49f695c5404f2fba8aaa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717606201420
+status: 4
+tags: []
+user_id: mzalaya

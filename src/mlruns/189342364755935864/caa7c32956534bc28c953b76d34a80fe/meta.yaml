@@ -1,0 +1,16 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/caa7c32956534bc28c953b76d34a80fe/artifacts
+deleted_time: 1717188606773
+end_time: 1717188366573
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: deleted
+run_id: caa7c32956534bc28c953b76d34a80fe
+run_name: melodic-vole-328
+run_uuid: caa7c32956534bc28c953b76d34a80fe
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717188365863
+status: 4
+tags: []
+user_id: mzalaya

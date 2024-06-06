@@ -1,0 +1,16 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/1ad95d1969ee472f84d22f7352836ca7/artifacts
+deleted_time: 1717531091900
+end_time: 1717529878336
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: deleted
+run_id: 1ad95d1969ee472f84d22f7352836ca7
+run_name: fun-bee-350
+run_uuid: 1ad95d1969ee472f84d22f7352836ca7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717529875893
+status: 3
+tags: []
+user_id: mzalaya

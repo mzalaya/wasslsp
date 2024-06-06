@@ -1,6 +1,7 @@
 # Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
 # License:
-
+import sys
+sys.path.append("/Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/")
 import numpy as np
 import pandas as pd
 

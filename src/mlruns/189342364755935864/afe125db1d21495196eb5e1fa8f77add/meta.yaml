@@ -1,0 +1,16 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/afe125db1d21495196eb5e1fa8f77add/artifacts
+deleted_time: 1717188606785
+end_time: 1717187247918
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: deleted
+run_id: afe125db1d21495196eb5e1fa8f77add
+run_name: omniscient-moose-983
+run_uuid: afe125db1d21495196eb5e1fa8f77add
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717187247340
+status: 4
+tags: []
+user_id: mzalaya

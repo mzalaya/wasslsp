@@ -4,7 +4,7 @@
 import platform
 import sys
 if platform.system() == 'Linux':
-    sys.path.append('/volpilcam/user1x/users/alayaelm/Documents/research/wasslsp/')
+    sys.path.append('/volper/users/alayaelm/Documents/Git/wasslsp/')
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -322,19 +322,25 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
 
 if __name__ == "__main__":
 
-    tvAR_type = "cauchytvAR(2)" #"gaussiantvAR(2)" # "gaussiantvAR(2)"  # gaussiantvAR(2) tvQAR(1)
+    tvAR_type = "cauchytvAR(2)" #"tvQAR(1)" # "cauchytvAR(2)" #"gaussiantvAR(2)" # "gaussiantvAR(2)"  # gaussiantvAR(2) tvQAR(1)
     times_t = [150, 200, 250, 300, 350, 400, 450, 500]
     times_T = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 
     d = 2
-    n_replications = 2000
-    space_kernel = "silverman" # "triangle" "gaussian" # "triangle"
+    n_replications = 500 #00
+    space_kernel = "tricube" # "triangle" "gaussian" # "triangle"
     time_kernel = "tricube" #"epanechnikov"
     zeta = 0.4
 
-    C = 20
+    C = 30
     # path_result = "../results/"
-    path_result = "/Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/results/"
+    if platform.system() == "Linux":
+        path_result = "/volper/users/alayaelm/Documents/Git/wasslsp/results"
+    elif platform.system() == "Darwin":
+        path_result = "/Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/results/"
+    else:
+        print("Unsupported platform")
+    print(f"Path results: {path_result}")
     main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kernel, zeta, C, path_result)
     print("Done!")
 
