@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/ce1840d05486464aaa110ca4cadbf6cd/artifacts
+end_time: 1717699324585
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: ce1840d05486464aaa110ca4cadbf6cd
+run_name: mercurial-ray-980
+run_uuid: ce1840d05486464aaa110ca4cadbf6cd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717699283774
+status: 3
+tags: []
+user_id: mzalaya

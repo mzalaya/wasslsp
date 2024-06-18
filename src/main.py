@@ -117,7 +117,7 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
             elif tvAR_type == "tvQAR(1)":
                 phi_star = lambda u, U: (1.9 * U - 0.95) * u + (-1.9 * U + 0.95) * (1 - u) * U
                 psi_star = lambda u: 1.0
-                sigma_star = lambda u: 1.0
+                # sigma_star = lambda u: 1.0
                 m_star = lambda u, U, x: phi_star(u, U) * x
                 for replication in range(n_replications):
                     t = 1
@@ -125,7 +125,7 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
                     epsilon = np.random.uniform(size=T)
                     X = np.zeros((T, d))
                     while t <= T - 1:
-                        X_tvar_2_T[t] = m_star(t/T, epsilon[t], X_tvar_2_T[t-1]) + sigma_star(t/T) * epsilon[t] - 0.5
+                        X_tvar_2_T[t] = m_star(t/T, epsilon[t], X_tvar_2_T[t-1]) + epsilon[t] - 0.5
                         X[t] = [X_tvar_2_T[t-1]]
                         t += 1
 
@@ -155,6 +155,14 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
             for T in times_T:
                 X_tvar_2[f"t:{t}_T:{T}"] = np.array(X_tvar_2[f"t:{t}_T:{T}"])
 
+
+        print("X_dict", X_dict.keys())
+        print("Shape", X_dict['T:1000'].keys())
+        print("Shape", X_dict['T:1000']['0'].shape)
+        print(X_tvar_2.keys())
+        print(X_tvar_2['t:150_T:1000'].shape)
+        # print(TT)
+
         norm_X_tvar_2 = {}
         for t in times_t:
             for T in times_T:
@@ -171,8 +179,20 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
             for T in times_T:
                 gaussian_weights[f"t:{t}_T:{T}"] = {}
 
+        # if tvAR_type == "cauchytvAR(2)":
+        #     for t in times_t:
+        #         for T in times_T:
+        #             std = np.std( X_tvar_2[f"t:{t}_T:{T}"])
+        #             bandwidth = std * (T**(-xi)) / C
+        #             ban
+        #             gaussian_kernel[f"T:{T}"] = Kernel(T=T, bandwidth=bandwidth, space_kernel=space_kernel,
+        #                                                time_kernel=time_kernel)
+        #             print("std = ", std)
+        #             print("bandwidth = ", bandwidth)
+        # else:
         for T in times_T:
             bandwidth = T ** (-xi) / C
+            print("bandwidth: ", bandwidth)
             gaussian_kernel[f"T:{T}"] = Kernel(T=T, bandwidth=bandwidth, space_kernel=space_kernel, time_kernel=time_kernel)
 
         # -------------------------------------------------------------------------------------------------------------
@@ -311,7 +331,7 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
             plt.xlim(np.array(times_T).min(), np.array(times_T).max())
             # plt.title(r'Wasserstein distance $W_1\big(\hat{\pi}_t(\cdot|{x}), \pi_t^\star(\cdot|{x})\big)$', fontsize=14)
             plt.xlabel(r'Sample size T', fontsize=14) #${T}$ ', fontsize=14)
-            plt.ylabel(r'1D-Wasserstein distance', fontsize=14)# $W_1(\hat{\pi}_t(\cdot|{x})$',
+            plt.ylabel(r'Wasserstein distance', fontsize=14)# $W_1(\hat{\pi}_t(\cdot|{x})$',
             plt.xticks(fontsize=12)
             plt.yticks(fontsize=12)
             plt.legend(loc="best")
@@ -322,17 +342,27 @@ def main(tvAR_type, times_t, times_T, d, n_replications, space_kernel, time_kern
 
 if __name__ == "__main__":
 
-    tvAR_type = "cauchytvAR(2)" #"tvQAR(1)" # "cauchytvAR(2)" #"gaussiantvAR(2)" # "gaussiantvAR(2)"  # gaussiantvAR(2) tvQAR(1)
+    tvAR_type = "tvQAR(1)" #"cauchytvAR(2)" #"tvQAR(1)" # "cauchytvAR(2)" #"gaussiantvAR(2)" # "gaussiantvAR(2)"  # gaussiantvAR(2) tvQAR(1)
     times_t = [150, 200, 250, 300, 350, 400, 450, 500]
     times_T = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 
     d = 2
-    n_replications = 500 #00
-    space_kernel = "tricube" # "triangle" "gaussian" # "triangle"
-    time_kernel = "tricube" #"epanechnikov"
-    zeta = 0.4
+    n_replications = 3000
+    kernel_names = [
+        "uniform", # 0
+        "rectangle", # 1
+        "triangle", # 2
+        "epanechnikov", # 3
+        "biweight", # 4
+        "tricube", # 5
+        "gaussian", # 6
+        "silverman", # 7
+    ]
+    space_kernel = kernel_names[6] # kernel_names[1] # "kernel_names" # "triangle" "gaussian" # "triangle" "rectangle
+    time_kernel = kernel_names[0] # kernel_names[0] #"triangle" #"epanechnikov"
+    zeta = 0.49950010000000006
 
-    C = 30
+    C = 20
     # path_result = "../results/"
     if platform.system() == "Linux":
         path_result = "/volper/users/alayaelm/Documents/Git/wasslsp/results"

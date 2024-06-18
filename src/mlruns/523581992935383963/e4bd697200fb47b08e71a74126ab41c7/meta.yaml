@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/523581992935383963/e4bd697200fb47b08e71a74126ab41c7/artifacts
+end_time: 1718630941421
+entry_point_name: ''
+experiment_id: '523581992935383963'
+lifecycle_stage: active
+run_id: e4bd697200fb47b08e71a74126ab41c7
+run_name: kindly-wasp-580
+run_uuid: e4bd697200fb47b08e71a74126ab41c7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718630728094
+status: 3
+tags: []
+user_id: mzalaya

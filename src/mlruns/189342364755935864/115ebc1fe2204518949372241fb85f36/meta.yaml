@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/115ebc1fe2204518949372241fb85f36/artifacts
+end_time: 1717699009594
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: 115ebc1fe2204518949372241fb85f36
+run_name: flawless-rat-381
+run_uuid: 115ebc1fe2204518949372241fb85f36
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717698969521
+status: 3
+tags: []
+user_id: mzalaya

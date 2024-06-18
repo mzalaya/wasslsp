@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/e0bbc552b8754df9b712e813167f1719/artifacts
+end_time: 1717697740652
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: e0bbc552b8754df9b712e813167f1719
+run_name: flawless-grouse-317
+run_uuid: e0bbc552b8754df9b712e813167f1719
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717697698499
+status: 3
+tags: []
+user_id: mzalaya

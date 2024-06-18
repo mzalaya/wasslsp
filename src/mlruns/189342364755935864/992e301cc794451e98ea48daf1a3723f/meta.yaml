@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/992e301cc794451e98ea48daf1a3723f/artifacts
+end_time: 1717770968382
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: 992e301cc794451e98ea48daf1a3723f
+run_name: big-hog-412
+run_uuid: 992e301cc794451e98ea48daf1a3723f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717770926447
+status: 3
+tags: []
+user_id: mzalaya

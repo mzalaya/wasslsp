@@ -1,0 +1,16 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/0f8df95459d247cbaf96a79bc011ea53/artifacts
+deleted_time: 1718625114686
+end_time: 1717951498842
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: deleted
+run_id: 0f8df95459d247cbaf96a79bc011ea53
+run_name: whimsical-shrimp-30
+run_uuid: 0f8df95459d247cbaf96a79bc011ea53
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717951488085
+status: 4
+tags: []
+user_id: mzalaya

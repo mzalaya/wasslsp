@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/3d92e8c1e5bd4c72aa8f885d6524aaf3/artifacts
+end_time: 1717697511477
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: 3d92e8c1e5bd4c72aa8f885d6524aaf3
+run_name: mercurial-robin-824
+run_uuid: 3d92e8c1e5bd4c72aa8f885d6524aaf3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717697470580
+status: 3
+tags: []
+user_id: mzalaya

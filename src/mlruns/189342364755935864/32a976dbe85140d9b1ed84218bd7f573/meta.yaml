@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/32a976dbe85140d9b1ed84218bd7f573/artifacts
+end_time: 1717943352867
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: 32a976dbe85140d9b1ed84218bd7f573
+run_name: luminous-mole-116
+run_uuid: 32a976dbe85140d9b1ed84218bd7f573
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717943287411
+status: 3
+tags: []
+user_id: mzalaya

@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/mzalaya/Library/CloudStorage/Dropbox/research/git/wasslsp/src/mlruns/189342364755935864/182d2d2f3e7047debac3fdd460237520/artifacts
+end_time: 1717771161494
+entry_point_name: ''
+experiment_id: '189342364755935864'
+lifecycle_stage: active
+run_id: 182d2d2f3e7047debac3fdd460237520
+run_name: puzzled-bug-724
+run_uuid: 182d2d2f3e7047debac3fdd460237520
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717771121789
+status: 3
+tags: []
+user_id: mzalaya
