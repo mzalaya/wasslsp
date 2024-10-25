@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="py311torchrapids" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="torchrapids" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="torch" project-jdk-type="Python SDK" />
 </project>
