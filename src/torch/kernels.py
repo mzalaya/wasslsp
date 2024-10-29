@@ -33,7 +33,6 @@ elif platform.system() == 'Linux':
 else:
     device = torch.device("cpu")
 
-# device = torch.device("cpu")
 def space_kernel(kernel, x, Xt, bandwidth):
     """
     Space kernel
