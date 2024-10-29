@@ -57,10 +57,11 @@ def gaussian(z):
     # z = torch._C._functorch.get_unwrapped(z)
     # print(type(z))
     # print(z)
+    # z = torch.tensor(z).to(device)
     return 1./torch.sqrt(2 * torch.as_tensor(torch.pi)) * torch.exp(-z ** 2 / 2)
 
 def silverman(z):
-    z = torch.tensor(z).to(device)
+    # z = torch.tensor(z).to(device)
     return 1/2 * torch.exp(-torch.abs(z) / math.sqrt(2)) * torch.sin(torch.abs(z) / math.sqrt(2) + torch.pi / 4)
 
 
