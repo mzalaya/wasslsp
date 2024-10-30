@@ -25,14 +25,6 @@ VALID_KERNELS_LIST = [
     "silverman",
 ]
 
-import platform
-if platform.system() == 'Darwin':
-    device = torch.device("mps")
-elif platform.system() == 'Linux':
-    device = torch.device("cuda")
-else:
-    device = torch.device("cpu")
-
 def space_kernel(kernel, x, Xt, bandwidth):
     """
     Space kernel
@@ -70,6 +62,7 @@ class Kernel(BaseEstimator):
             space_kernel="gaussian",
             time_kernel="gaussian",
             metric="euclidean",
+            device="cpu",
             VALID_KERNELS_DIC={
                 "uniform": uniform,
                 "rectangle": rectangle,
@@ -87,6 +80,7 @@ class Kernel(BaseEstimator):
         self.space_kernel = space_kernel
         self.time_kernel = time_kernel
         self.metric = metric
+        self.device = device
         self.VALID_KERNELS_DIC = VALID_KERNELS_DIC
 
         if self.space_kernel in VALID_KERNELS_LIST and self.time_kernel in VALID_KERNELS_LIST:
@@ -95,45 +89,13 @@ class Kernel(BaseEstimator):
         else:
             raise ValueError("Kernel type not supported")
 
-    def fit(self, X, t):
+    def fit(self, x, t):
 
         time_vals = [time_kernel(self.tkernel_name, a/self.T, t/self.T, self.bandwidth) for a in range(self.T)]
-        space_vals = [space_kernel(self.skernel_name, X[t], X[a], self.bandwidth) for a in range(self.T)]
+
+        space_vals = [space_kernel(self.skernel_name, x[t], x[a], self.bandwidth) for a in range(self.T)]
 
         ts_vals = torch.tensor(time_vals) * torch.tensor(space_vals)
 
         weights_t = ts_vals / ts_vals.sum()
-        return weights_t.to(device)
-
-    def _fit_(self, X, t):
-        """
-        Fit the Kernel Density model on the data.
-        :param X: array-like of shape (n_samples, n_features)
-                List of n_features-dimensional data points.  Each row corresponds to a single data point.
-        :param y:
-        :return:
-        """
-
-        tT = t / self.T
-        x = X[t]
-        numerator = torch.empty(self.T, dtype=torch.float).to(device)
-        denominator = torch.empty(self.T, dtype=torch.float).to(device)
-
-        if self.space_kernel in VALID_KERNELS_LIST and self.time_kernel in VALID_KERNELS_LIST:
-            for a in range(self.T):
-                Xa = X[a]
-                aT = a / self.T
-                skernel_name = self.VALID_KERNELS_DIC[self.space_kernel]
-                tkernel_name = self.VALID_KERNELS_DIC[self.time_kernel]
-
-                space_val = space_kernel(skernel_name, x, Xa, self.bandwidth)
-                time_val = time_kernel(tkernel_name, aT, tT, self.bandwidth)
-
-                numerator[a] = space_val * time_val
-                denominator[a] = time_val * space_val
-        else:
-            raise ValueError("Kernel type not supported")
-
-        weights_t = numerator / denominator.sum()
-
-        return weights_t
+        return weights_t.to(self.device)
