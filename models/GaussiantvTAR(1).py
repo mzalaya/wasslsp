@@ -25,6 +25,8 @@ elif platform.system() == 'Linux':
 else:
     device = torch.device("cpu")
 
+import pickle
+
 import matplotlib.pyplot as plt
 # get_ipython().run_line_magic('matplotlib', 'inline')
 
@@ -121,7 +123,7 @@ def bandwidth(d, T, lambda_=1/12):
     bandwidth = lambda_ * T**(-xi)
     return bandwidth
 
-def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel, space_kernel, device):
+def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel, space_kernel, path_dicts, device):
 
     gaussian_kernel = {
         f"T:{T}": Kernel(T=T, bandwidth=bandwidth(d, T), space_kernel=space_kernel, time_kernel=time_kernel,
@@ -158,6 +160,10 @@ def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel
         device=device,
     )
 
+    dict_name = "gaussian_weights_tensor.pkl"
+    with open(os.path.join(path_dicts, dict_name), 'wb') as f:
+        pickle.dump(gaussian_weights_tensor, f)
+
     return gaussian_weights_tensor
 
 
@@ -172,7 +178,7 @@ def empirical_cds(times_t, times_T, X_tvtar_1, device):
     return empirical_cds_vals
 
 
-def wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replications, gaussian_weights_tensor, empirical_cdf_vals, device, pplot=None):
+def wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replications, gaussian_weights_tensor, empirical_cdf_vals, path_dicts, device, pplot=None):
 
     x_rep = TensorDict(
         {
@@ -262,9 +268,12 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replicatio
         for T in times_T:
             wass_times_t[f"t:{t}"].append(wass_distances_empirical_meanNW[f"t:{t}_T:{T}"])
 
+    dict_name = "wass_times_t.pkl"
+    with open(os.path.join(path_dicts, dict_name), 'wb') as f:
+        pickle.dump(wass_times_t, f)
 
     return wass_times_t
-def plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_fig):
+def plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs, show=False):
 
     figure_name = f"torch_wassdistance_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}.png"
 
@@ -282,16 +291,14 @@ def plot_results(times_t, times_T, n_replications, wass_times_t, process, time_k
 
 
     plt.tight_layout()
-    fig.savefig(os.path.join(path_fig, figure_name), dpi=150)
-    plt.show()
-
-
-
-
+    fig.savefig(os.path.join(path_figs, figure_name), dpi=150)
+    if show:
+        plt.show()
 
 def main():
 
-    path_fig = '../results'
+    path_figs = '../results/figs'
+    path_dicts = '../results/dicts'
     process = 'GaussiantvTAR(1)'
     space_kernel = "gaussian"
     time_kernel = "uniform"
@@ -308,7 +315,7 @@ def main():
 
     X_tvtar_1, X_tvtar_1_replications, X_dict = simulation_L_rep_process(d, times_t, times_T, n_replications, device)
 
-    gaussian_weights_tensor = computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel, space_kernel, device)
+    gaussian_weights_tensor = computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel, space_kernel, path_dicts, device)
 
 
     empirical_cdf_vals = empirical_cds(times_t, times_T, X_tvtar_1, device)
@@ -316,9 +323,9 @@ def main():
     times_t = times_t.detach().cpu().numpy()
     times_T = times_T.detach().cpu().numpy()
 
-    wass_times_t = wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replications, gaussian_weights_tensor, empirical_cdf_vals, device)
+    wass_times_t = wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replications, gaussian_weights_tensor, empirical_cdf_vals, path_dicts, device)
 
-    plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_fig)
+    plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs)
 
 
 if __name__ == '__main__':
