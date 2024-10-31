@@ -313,7 +313,7 @@ def main():
     time_kernel = "uniform"
     d = 1
     device = torch.device("cpu")
-    test = None
+    test = True
 
     times_t, times_T, n_replications = running_test(test, device)
 
