@@ -76,14 +76,11 @@ def running_test(test, device):
     return times_t, times_T, n_replications
 
 
+phi1 = lambda u: 0.4 * torch.sin(2 * torch.pi * torch.tensor([u]))
+phi2 = lambda u: 0.5 * torch.cos(2 * torch.pi * torch.tensor([u]))
+
 def conditional_mean_function(u, x):
-    phi1 = lambda u: 0.4 * torch.sin(2 * torch.pi * torch.tensor([u]))
-    phi2 = lambda u: 0.5 * torch.cos(2 * torch.pi * torch.tensor([u]))
 
-    tau = lambda u: 0.0  # Constant threshold
-    sigma_star = lambda u: 1.0
-
-    # Generate m_star
     m_star = lambda u, x: phi1(u) * torch.max(x, torch.tensor([0.0])) + phi2(u) * torch.max(-x, torch.tensor([0.0]))
 
     return m_star(u, x)
@@ -160,16 +157,9 @@ def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel
         device=device,
         )
 
-    # print("Fitting gaussian kernel and unifom time kernel")
-    # tic = time.time()
     for t in times_t:
         for T in times_T:
             gaussian_weights[f"t:{t}_T:{T}"] = {str(replication):gaussian_kernel[f"T:{T}"].fit(X_dict[f"T:{T}"][str(replication)], t-1) for replication in range(n_replications)}
-
-    # tac = time.time()
-    # toc = tac - tic
-    # print(f"Time taken for kernel fitting = {toc} seconds")
-
 
     gaussian_weights_tensor = TensorDict(
         {
@@ -267,17 +257,6 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replicatio
                 if pplot is not None:
                     plt.show()
                 ##plt.savefig(path_fig+"nadar_watson_weights_", dpi=150)
-
-    # wass_distances_all_replications = {}
-    #
-    # for t in times_t:
-    #     for T in times_T:
-    #         wass_distances_all_replications[f"t:{t}_T:{T}"] = []
-    #
-    # for t in times_t:
-    #     for T in times_T:
-    #         for replications in range(n_replications):
-    #             wass_distances_all_replications[f"t:{t}_T:{T}"].append(wasserstein_distances[f"t:{t}_T:{T}"][str(replication)])
             
     wass_distances_empirical_meanNW = {}
     for t in times_t:
@@ -337,11 +316,6 @@ def main():
     test = None
 
     times_t, times_T, n_replications = running_test(test, device)
-
-    # print("times_t:", times_t)
-    # print("time_T:", times_T)
-    # print("n_replicaitons", n_replications)
-    # print("device", device)
 
     X_tvtar_1, X_tvtar_1_replications, X_dict = simulation_L_rep_process(d, times_t, times_T, n_replications, device)
 
