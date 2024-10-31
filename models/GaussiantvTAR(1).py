@@ -6,7 +6,7 @@
 Gaussian tvTAR(1)
 Ref: S. Richter and R. Dahlhaus. Cross validation for locally stationary processes. Ann. Statist., 47(4):2145–2173, 2019
 """
-
+from datetime import datetime
 import os
 import warnings
 warnings.filterwarnings('ignore')
@@ -67,6 +67,12 @@ def running_test(test, device):
         times_T = torch.tensor([10, 20]).to(device)
         n_replications = 10
 
+    print(
+        f'times_t [{times_t}] | \n'
+        f'times_T = {times_T} | \n'
+        f'n_replications = {n_replications} | device = {device}'
+    )
+
     return times_t, times_T, n_replications
 
 
@@ -96,6 +102,10 @@ def simulation_1_rep_process(d, T, device):
     return X_tvtar_1_T, X
 
 def simulation_L_rep_process(d, times_t, times_T, n_replications, device):
+    tic = datetime.now()
+    print('-' * 100)
+    print("Simulation of L-replications with T-samples of process ...")
+
 
     X_tvtar_1_replications = TensorDict(
         {f"T:{T}": torch.zeros((n_replications, T)) for T in times_T},
@@ -124,7 +134,8 @@ def simulation_L_rep_process(d, times_t, times_T, n_replications, device):
             X_tvtar_1[f"t:{t}_T:{T}"] = \
             torch.tensor([X_tvtar_1_replications[f"T:{T}"][replication][t-1] for replication in range(n_replications)])
 
-
+    toc = datetime.now()
+    print(f"Simulation completed ; time elapsed = {toc-tic}.")
     return X_tvtar_1, X_tvtar_1_replications, X_dict
 
 def bandwidth(d, T, lambda_=1/12):
@@ -134,6 +145,9 @@ def bandwidth(d, T, lambda_=1/12):
     return bandwidth
 
 def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel, space_kernel, path_dicts, device):
+    tic = datetime.now()
+    print('-' * 100)
+    print("Running computation weights ...")
 
     gaussian_kernel = {
         f"T:{T}": Kernel(T=T, bandwidth=bandwidth(d, T), space_kernel=space_kernel, time_kernel=time_kernel,
@@ -146,15 +160,15 @@ def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel
         device=device,
         )
 
-    print("Fitting gaussian kernel and unifom time kernel")
-    tic = time.time()
+    # print("Fitting gaussian kernel and unifom time kernel")
+    # tic = time.time()
     for t in times_t:
         for T in times_T:
             gaussian_weights[f"t:{t}_T:{T}"] = {str(replication):gaussian_kernel[f"T:{T}"].fit(X_dict[f"T:{T}"][str(replication)], t-1) for replication in range(n_replications)}
 
-    tac = time.time()
-    toc = tac - tic
-    print(f"Time taken for kernel fitting = {toc} seconds")
+    # tac = time.time()
+    # toc = tac - tic
+    # print(f"Time taken for kernel fitting = {toc} seconds")
 
 
     gaussian_weights_tensor = TensorDict(
@@ -174,6 +188,8 @@ def computation_weights(d, times_t, times_T, n_replications, X_dict, time_kernel
     with open(os.path.join(path_dicts, dict_name), 'wb') as f:
         pickle.dump(gaussian_weights_tensor, f)
 
+    toc = datetime.now()
+    print(f"Weights computation complete at {toc}; time elapsed = {toc-tic}.")
     return gaussian_weights_tensor
 
 
@@ -189,7 +205,9 @@ def empirical_cds(times_t, times_T, X_tvtar_1, device):
 
 
 def wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replications, gaussian_weights_tensor, empirical_cdf_vals, path_dicts, device, pplot=None):
-
+    tic = datetime.now()
+    print('-' * 100)
+    print("Running wasserstein distances ...")
     x_rep = TensorDict(
         {
             f"t:{t}_T:{T}":torch.zeros((n_replications, T+1)) for t in times_t for T in times_T
@@ -282,6 +300,8 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvtar_1_replicatio
     with open(os.path.join(path_dicts, dict_name), 'wb') as f:
         pickle.dump(wass_times_t, f)
 
+    toc = datetime.now()
+    print(f"Wasserstein distances at {toc}; time elapsed = {toc - tic}.")
     return wass_times_t
 def plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs, show=False):
 
@@ -318,10 +338,10 @@ def main():
 
     times_t, times_T, n_replications = running_test(test, device)
 
-    print("times_t:", times_t)
-    print("time_T:", times_T)
-    print("n_replicaitons", n_replications)
-    print(device)
+    # print("times_t:", times_t)
+    # print("time_T:", times_T)
+    # print("n_replicaitons", n_replications)
+    # print("device", device)
 
     X_tvtar_1, X_tvtar_1_replications, X_dict = simulation_L_rep_process(d, times_t, times_T, n_replications, device)
 
