@@ -35,7 +35,7 @@ if platform.system() == 'Darwin':
               'font.size': 12,
               'legend.fontsize': 12,
               'xtick.labelsize': 12,
-              'ytick.labelsize': 8, # 10
+              'ytick.labelsize': 12, # 10
               'text.usetex': True,
               'figure.figsize': (10, 8)}
     plt.rcParams.update(params)
@@ -44,7 +44,7 @@ else:
               'font.size': 12,
               'legend.fontsize': 12,
               'xtick.labelsize': 12,
-              'ytick.labelsize': 8, # 10
+              'ytick.labelsize': 12, # 10
               'figure.figsize': (10, 8)}
     plt.rcParams.update(params)
 
