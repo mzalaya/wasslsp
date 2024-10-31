@@ -30,14 +30,24 @@ import pickle
 import matplotlib.pyplot as plt
 # get_ipython().run_line_magic('matplotlib', 'inline')
 
-params = {'axes.labelsize': 12,
-          'font.size': 12,
-          'legend.fontsize': 12,
-          'xtick.labelsize': 12,
-          'ytick.labelsize': 8, # 10
-          'text.usetex': True,
-          'figure.figsize': (10, 8)}
-plt.rcParams.update(params)
+if platform.system() == 'Darwin':
+    params = {'axes.labelsize': 12,
+              'font.size': 12,
+              'legend.fontsize': 12,
+              'xtick.labelsize': 12,
+              'ytick.labelsize': 8, # 10
+              'text.usetex': True,
+              'figure.figsize': (10, 8)}
+    plt.rcParams.update(params)
+else:
+    params = {'axes.labelsize': 12,
+              'font.size': 12,
+              'legend.fontsize': 12,
+              'xtick.labelsize': 12,
+              'ytick.labelsize': 8, # 10
+              'figure.figsize': (10, 8)}
+    plt.rcParams.update(params)
+
 
 
 from src.torch.utils import *
