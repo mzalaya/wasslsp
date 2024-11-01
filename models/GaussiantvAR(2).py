@@ -317,7 +317,7 @@ def main():
     time_kernel = "tricube"
     d = 2
     # device = torch.device("cpu")
-    test = None
+    test = True
 
     times_t, times_T, n_replications = running_test(test, device)
 
