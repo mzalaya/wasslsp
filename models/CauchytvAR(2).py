@@ -140,7 +140,7 @@ def bandwidth(d, T, lambda_=1/12):
 def computation_weights(d, times_t, times_T, n_replications, X_dict, process, time_kernel, space_kernel, path_dicts, device):
     tic = datetime.now()
     print('-' * 100)
-    print("Running computation weights ...")
+    print(f"Running computation weights starts at {tic} ...")
 
     gaussian_kernel = {
         f"T:{T}": Kernel(T=T, bandwidth=bandwidth(d, T), space_kernel=space_kernel, time_kernel=time_kernel,
@@ -180,21 +180,22 @@ def computation_weights(d, times_t, times_T, n_replications, X_dict, process, ti
     return gaussian_weights_tensor
 
 
-def empirical_cds(times_t, times_T, X_tvar_2, device):
-    empirical_cds_vals = TensorDict(
+def empirical_cdf(times_t, times_T, X_tvar_2, device):
+
+    empirical_cdf_vals = TensorDict(
         {
-            f"t:{t}_T:{T}":ECDFTorch(X_tvar_2[f"t:{t}_T:{T}"]).y for t in times_t for T in times_T
+            f"t:{t}_T:{T}": ECDFTorch(X_tvar_2[f"t:{t}_T:{T}"], device=device).y for t in times_t for T in times_T
         },
         batch_size=[],
         device=device,
         )
-    return empirical_cds_vals
+    return empirical_cdf_vals
 
 
 def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replications, gaussian_weights_tensor, empirical_cdf_vals, process, time_kernel, space_kernel, path_dicts, device, pplot=None):
     tic = datetime.now()
     print('-' * 100)
-    print("Running wasserstein distances ...")
+    print(f"Running wasserstein distances starts at {tic} ...")
     x_rep = TensorDict(
         {
             f"t:{t}_T:{T}":torch.zeros((n_replications, T+1)) for t in times_t for T in times_T
@@ -226,12 +227,12 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replication
         for t in times_t:
             for T in times_T:
                 
-                weighted_ecdf = ECDFTorch(X_tvar_2_replications[f"T:{T}"][replication], gaussian_weights_tensor[f"t:{t}_T:{T}"][str(replication)])
+                weighted_ecdf = ECDFTorch(X_tvar_2_replications[f"T:{T}"][replication], gaussian_weights_tensor[f"t:{t}_T:{T}"][str(replication)], device=device)
 
                 x_rep[f"t:{t}_T:{str(T)}"][replication] = weighted_ecdf.x
                 y_rep[f"t:{t}_T:{str(T)}"][replication] = weighted_ecdf.y
                             
-                ecdf = ECDFTorch(X_tvar_2_replications[f"T:{T}"][replication])
+                ecdf = ECDFTorch(X_tvar_2_replications[f"T:{T}"][replication], device=device)
 
                 weighted_ecdf_y = ecdf.y.detach().cpu().numpy()
                 ecdf_y = ecdf.y.detach().cpu().numpy()
@@ -328,7 +329,7 @@ def main():
     gaussian_weights_tensor = computation_weights(d, times_t, times_T, n_replications, X_dict, process, time_kernel, space_kernel, path_dicts, device)
 
 
-    empirical_cdf_vals = empirical_cds(times_t, times_T, X_tvar_2, device)
+    empirical_cdf_vals = empirical_cdf(times_t, times_T, X_tvar_2, device)
 
     times_t = times_t.detach().cpu().numpy()
     times_T = times_T.detach().cpu().numpy()
