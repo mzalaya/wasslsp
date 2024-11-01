@@ -1,58 +1,60 @@
 # Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
 # License:
 
-import math
 import torch
 
-import platform
-if platform.system() == 'Darwin':
-    device = torch.device("mps")
-elif platform.system() == 'Linux':
-    device = torch.device("cuda")
-else:
-    device = torch.device("cpu")
-def uniform(z):
+def uniform(z, device=None):
     z = torch.tensor(z).to(device)
     if torch.abs(z) <= 1.:
         return 1.
     else:
         return 0.
 
-def rectangle(z):
+def rectangle(z, device=None):
     z = torch.tensor(z).to(device)
     if torch.abs(z) <= 1.:
         return 1/2
     else:
         return 0.
 
-def triangle(z):
+def triangle(z, device=None):
     z = torch.tensor(z).to(device)
     if torch.abs(z) <= 1.:
         return (1 - torch.abs(z))
     else:
         return 0.
 
-def epanechnikov(z):
+def epanechnikov(z, device=None):
     z = torch.tensor(z).to(device)
     if torch.abs(z) <= 1.:
         return 3/4 * (1 - z**2)
     else:
         return 0.
-def biweight(z):
-    z = torch.tensor(z).to(device)
-    if torch.abs(z) <= 1.:
-        return 15/16 * (1 - z**2)**2
-    else:
-        return 0.
+def biweight(z, device=None):
 
-def tricube(z):
+    mask = torch.abs(z) <= 1.
+    z_mask = (15/16 * (1 - z**2)**2) * mask
+    return z_mask
+
+
+    # z : BatchedTensor(lvl=1, bdim=0, value= tensor([0.], device='mps:0')
+    # z = torch._C._functorch.get_unwrapped(z)
+    # z = z.detach().cpu()
+    # print(z)
+    # if torch.abs(z) <= 1.:
+        # z = 15/16 * (1 - z**2)**2
+        # return z
+    # else:
+        # return 0.
+
+def tricube(z, device=None):
     z = torch.tensor(z).to(device)
     if torch.abs(z) <= 1.:
         return (1 - torch.abs(z) ** 3)*3
     else:
         return 0.
 
-def gaussian(z):
+def gaussian(z, device=None):
     # z : BatchedTensor(lvl=1, bdim=0, value= tensor([0.], device='mps:0')
     # z = torch._C._functorch.get_unwrapped(z)
     # print(type(z))
@@ -60,19 +62,20 @@ def gaussian(z):
     # z = torch.tensor(z).to(device)
     return 1./torch.sqrt(2 * torch.as_tensor(torch.pi)) * torch.exp(-z ** 2 / 2)
 
-def silverman(z):
+def silverman(z, device=None):
     # z = torch.tensor(z).to(device)
-    return 1/2 * torch.exp(-torch.abs(z) / math.sqrt(2)) * torch.sin(torch.abs(z) / math.sqrt(2) + torch.pi / 4)
+    return 1/2 * torch.exp(-torch.abs(z) / torch.sqrt(torch.tensor([2.])) ) * torch.sin(torch.abs(z) / torch.sqrt(torch.tensor([2.])) + torch.pi / 4)
 
 
 class ECDFTorch(torch.nn.Module):
-    def __init__(self, x, weights=None, side='right'):
+    def __init__(self, x, weights=None, side='right', device=None):
         super(ECDFTorch, self).__init__()
 
         if side.lower() not in ['right', 'left']:
             msg = "side can take the values 'right' or 'left'"
             raise ValueError(msg)
         self.side = side
+        self.device = device
 
         if len(x.shape) != 1:
             msg = 'x must be 1-dimensional'
@@ -100,7 +103,11 @@ class ECDFTorch(torch.nn.Module):
 
     def forward(self, time):
         tind = torch.searchsorted(self.x, time, side=self.side) - 1
-        return self.y[tind].to(device)
+        return self.y[tind].to(self.device)
+
+
+
+
 
 def torch_wasserstein_loss(tensor_a,tensor_b):
     #Compute the first Wasserstein distance between two 1D distributions.
