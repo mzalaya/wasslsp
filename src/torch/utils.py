@@ -2,6 +2,7 @@
 # License:
 
 import torch
+import math
 
 def uniform(z, device=None):
     z = torch.tensor(z).to(device)
@@ -63,8 +64,8 @@ def gaussian(z, device=None):
     return 1./torch.sqrt(2 * torch.as_tensor(torch.pi)) * torch.exp(-z ** 2 / 2)
 
 def silverman(z, device=None):
-    # z = torch.tensor(z).to(device)
-    return 1/2 * torch.exp(-torch.abs(z) / torch.sqrt(torch.tensor([2.])) ) * torch.sin(torch.abs(z) / torch.sqrt(torch.tensor([2.])) + torch.pi / 4)
+    sqrt_2 = math.sqrt(2)
+    return 1/2 * torch.exp(-torch.abs(z) / sqrt_2 ) * torch.sin(torch.abs(z) / sqrt_2 + torch.pi / 4)
 
 
 class ECDFTorch(torch.nn.Module):

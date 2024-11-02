@@ -306,9 +306,7 @@ def main():
 
     if platform.system() == 'Darwin':
         device = torch.device("mps")
-    elif platform.system() == 'Linux':
-        device = torch.device("cuda")
-    elif platform.system() == 'Windows':
+    elif platform.system() == 'Linux' or platform.system() == 'Windows':
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
@@ -320,7 +318,7 @@ def main():
     time_kernel = "epanechnikov"
     space_kernel = "biweight"
     d = 2
-    test = None
+    test = True
 
     times_t, times_T, n_replications = running_test(test, device)
 
