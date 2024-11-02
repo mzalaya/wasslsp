@@ -55,7 +55,7 @@ def running_test(test, device):
     if test is not None:
         times_t = torch.tensor([150, 200, 250, 300, 350, 400, 450, 500]).to(device)
         times_T = torch.tensor([1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]).to(device)
-        n_replications = 1000
+        n_replications = 500
     else:
         times_t = torch.tensor([5]).to(device)
         times_T = torch.tensor([10, 20]).to(device)

@@ -189,10 +189,10 @@ def computation_weights(d, times_t, times_T, n_replications, X_dict, process, ti
     return gaussian_weights_tensor
 
 
-def empirical_cdf(times_t, times_T, X_tvar_2, device):
+def empirical_cdf(times_t, times_T, X_tvar_1, device):
     empirical_cdf_vals = TensorDict(
         {
-            f"t:{t}_T:{T}": ECDFTorch(X_tvar_2[f"t:{t}_T:{T}"], device=device).y for t in times_t for T in times_T
+            f"t:{t}_T:{T}": ECDFTorch(X_tvar_1[f"t:{t}_T:{T}"], device=device).y for t in times_t for T in times_T
         },
         batch_size=[],
         device=device,
@@ -200,7 +200,7 @@ def empirical_cdf(times_t, times_T, X_tvar_2, device):
     return empirical_cdf_vals
 
 
-def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replications, gaussian_weights_tensor,
+def wasserstein_distances(times_t, times_T, n_replications, X_tvar_1_replications, gaussian_weights_tensor,
                           empirical_cdf_vals, process, time_kernel, space_kernel, path_dicts, device, pplot=None):
     tic = datetime.now()
     print('-' * 100)
@@ -236,13 +236,13 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replication
         for t in times_t:
             for T in times_T:
 
-                weighted_ecdf = ECDFTorch(X_tvar_2_replications[f"T:{T}"][replication],
+                weighted_ecdf = ECDFTorch(X_tvar_1_replications[f"T:{T}"][replication],
                                           gaussian_weights_tensor[f"t:{t}_T:{T}"][str(replication)], device=device)
 
                 x_rep[f"t:{t}_T:{str(T)}"][replication] = weighted_ecdf.x
                 y_rep[f"t:{t}_T:{str(T)}"][replication] = weighted_ecdf.y
 
-                ecdf = ECDFTorch(X_tvar_2_replications[f"T:{T}"][replication], device=device)
+                ecdf = ECDFTorch(X_tvar_1_replications[f"T:{T}"][replication], device=device)
 
                 weighted_ecdf_y = ecdf.y.detach().cpu().numpy()
                 ecdf_y = ecdf.y.detach().cpu().numpy()
@@ -326,24 +326,24 @@ def main():
     process = 'GaussiantvTAR(1)'
 
     time_kernel = "tricube"
-
     space_kernel = "silverman"
+
     d = 1
-    test = True 
+    test = True
 
     times_t, times_T, n_replications = running_test(test, device)
 
-    X_tvar_2, X_tvar_2_replications, X_dict = simulation_L_rep_process(d, times_t, times_T, n_replications, device)
+    X_tvar_1, X_tvar_1_replications, X_dict = simulation_L_rep_process(d, times_t, times_T, n_replications, device)
 
     gaussian_weights_tensor = computation_weights(d, times_t, times_T, n_replications, X_dict, process, time_kernel,
                                                   space_kernel, path_dicts, device)
 
-    empirical_cdf_vals = empirical_cdf(times_t, times_T, X_tvar_2, device)
+    empirical_cdf_vals = empirical_cdf(times_t, times_T, X_tvar_1, device)
 
     times_t = times_t.detach().cpu().numpy()
     times_T = times_T.detach().cpu().numpy()
 
-    wass_times_t = wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replications,
+    wass_times_t = wasserstein_distances(times_t, times_T, n_replications, X_tvar_1_replications,
                                          gaussian_weights_tensor, empirical_cdf_vals, process, time_kernel,
                                          space_kernel, path_dicts, device)
 
