@@ -59,7 +59,7 @@ def running_test(test, device):
     else:
         times_t = torch.tensor([5]).to(device)
         times_T = torch.tensor([10, 20]).to(device)
-        n_replications = 10
+        n_replications = 1000
 
     print(
         f'times_t [{times_t}] | \n'
@@ -318,6 +318,7 @@ def main():
     else:
         device = torch.device("cpu")
 
+    device = torch.device("cpu")
     path_figs = '../results/figs'
     path_dicts = '../results/dicts'
     process = 'GaussiantvAR(2)'

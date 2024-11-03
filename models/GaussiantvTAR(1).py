@@ -329,7 +329,8 @@ def main():
     space_kernel = "silverman"
 
     d = 1
-    test = True
+    test = None
+    device = torch.device("cpu")
 
     times_t, times_T, n_replications = running_test(test, device)
 
