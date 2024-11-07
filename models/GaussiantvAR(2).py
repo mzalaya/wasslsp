@@ -56,9 +56,12 @@ from scipy.stats import wasserstein_distance
 
 def running_test(test, device):
     if test is not None:
-        times_t = np.array([1000, 1050, 1100, 1200, 1250, 1300, 1350, 1400], dtype=int)
+        # times_t = np.array([1000, 1050, 1100, 1200, 1250, 1300, 1350, 1400], dtype=int)
         # times_T = np.array([2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000], dtype=int)
-        times_T = np.array([2000, 6000, 10000, 14000, 18000, 22000, 26000, 30000], dtype=int)
+        # times_T = np.array([2000, 6000, 10000, 14000, 18000, 22000, 26000, 30000], dtype=int)
+        times_T = np.array([10000], dtype=int)
+        times_t = np.array([2200, 2250, 2300, 2350, 2400, 2450, 2500, 2550, 2600, 2650, 2700, 2750, 2800], dtype=int)
+        times_t = np.array([4200, 4300, 4500, 4700, 5000, 5200, 5300, 5400, 5500, 5600, 5700, 5800, 5900, 6000], dtype=int)
         n_replications = 1000
     else:
         times_t =  np.array([1000, 1050, 1100, 1200, 1250, 1300, 1350, 1400], dtype=int)
@@ -313,6 +316,50 @@ def plot_results(lambda_, times_t, times_T, n_replications, wass_times_t, proces
     figure_name = f"torch_wassdistance_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}_lambda_={lambda_}.png"
 
     fig = plt.figure(figsize=(8, 4))
+    print("Wasserstein distance", wass_times_t)
+    wass_vals = []
+    for t in times_t:
+        wass_vals.append(wass_times_t[f"t:{t}"])
+
+    wass_vals = [
+        x
+        for xs in wass_vals
+        for x in xs
+    ]
+    wass_vals = np.array(wass_vals)
+
+    print(wass_vals)
+    print(times_t/times_T)
+    colors = plt.cm.Set1(np.linspace(0, .5, 8))
+    markers = ['o', '>', 'D', 'X', "p", 's', 'P', '*']
+    plt.plot(times_t/times_T, wass_vals, color=colors[0], marker=markers[0],
+             markersize=6, lw=2)
+    plt.xlim(times_t.min() / times_T, times_t.max() / times_T)
+    plt.xlabel(r'Sample size ${T}$ ')
+    plt.ylabel("Wasserstein distance")
+    plt.legend()
+    plt.grid(True)
+
+
+    # for i, t in zip(range(len(times_t)), times_t):
+    #     plt.plot(times_t/times_T, wass_times_t[f"t:{t}"], label=f"t:{t}", color=colors[i], marker=markers[i], markersize=6,
+    #              lw=2)
+    #     plt.xlim(times_t.min()/times_T, times_t.max()/times_T)
+    #     plt.xlabel(r'Sample size ${T}$ ')
+    #     plt.ylabel("Wasserstein distance")
+    #     plt.legend()
+    #     plt.grid(True)
+
+    plt.tight_layout()
+    fig.savefig(os.path.join(path_figs, figure_name), dpi=150)
+    if show:
+        plt.show()
+
+def _plot_results(lambda_, times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs,
+                 show=False):
+    figure_name = f"torch_wassdistance_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}_lambda_={lambda_}.png"
+
+    fig = plt.figure(figsize=(8, 4))
 
     colors = plt.cm.Set1(np.linspace(0, .5, 8))
     markers = ['o', '>', 'D', 'X', "p", 's', 'P', '*']
@@ -355,7 +402,7 @@ def main():
 
     d = 2
     test = True
-    lambda_ = 0.25
+    lambda_ = 1.
 
     times_t, times_T, n_replications = running_test(test, device)
 
