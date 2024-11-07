@@ -10,6 +10,8 @@ from datetime import datetime
 import os
 import warnings
 warnings.filterwarnings('ignore')
+from numba import njit
+from numba import cuda
 
 import time
 import numpy as np
@@ -42,7 +44,8 @@ else:
               'figure.figsize': (10, 8)}
     plt.rcParams.update(params)
 
-
+import sys
+sys.path.append("/Users/mzalaya/Documents/git/wasslsp/")
 
 from src.torch.utils import *
 from src.torch.utils import ECDFTorch
@@ -53,13 +56,14 @@ from scipy.stats import wasserstein_distance
 
 def running_test(test, device):
     if test is not None:
-        times_t = torch.tensor([150, 200, 250, 300, 350, 400, 450, 500]).to(device)
-        times_T = torch.tensor([1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]).to(device)
-        n_replications = 500
-    else:
-        times_t = torch.tensor([5]).to(device)
-        times_T = torch.tensor([10, 20]).to(device)
+        times_t = np.array([1000, 1050, 1100, 1200, 1250, 1300, 1350, 1400], dtype=int)
+        # times_T = np.array([2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000], dtype=int)
+        times_T = np.array([2000, 6000, 10000, 14000, 18000, 22000, 26000, 30000], dtype=int)
         n_replications = 1000
+    else:
+        times_t =  np.array([1000, 1050, 1100, 1200, 1250, 1300, 1350, 1400], dtype=int)
+        times_T =  np.array([2000, 3000, 4000, 5000], dtype=int)
+        n_replications = 10
 
     print(
         f'times_t [{times_t}] | \n'
@@ -69,28 +73,51 @@ def running_test(test, device):
 
     return times_t, times_T, n_replications
 
+# phi_star = lambda u: 1.5 - torch.cos(2 * torch.pi * torch.tensor([u]))
+@njit
+def phi_star(u):
+    return 1.5 - np.cos(2 * np.pi * u)
+# phi_star = lambda u: 1.5 - np.cos(2 * np.pi * u)
 
-phi_star = lambda u: 1.5 - torch.cos(2 * torch.pi * torch.tensor([u])) 
-psi_star = lambda u: 1.8
 
+# @cuda.jit
+@njit
 def conditional_mean_function(u, x, y):
-
-    m_star = lambda u, x, y: psi_star(u) * torch.cos(phi_star(u)) * x - 0.8 * y
+    # m_star = lambda u, x, y: psi_star(u) * torch.cos(phi_star(u)) * x - 0.8 * y
+    m_star = lambda u, x, y: 1.8 * np.cos(phi_star(u)) * x - 0.8 * y
 
     return m_star(u, x, y)
 
-def simulation_1_rep_process(d, T, device):
+# @cuda.jit(device=True)
+@njit
+def simulation_1_rep_process(d, T):
+    t = 2
+    epsilon = np.random.normal(0., 1., (T,))
+    X = np.zeros((T,d))
+    X_tvar_2_T = np.zeros(T)
+    while t <= T - 1:
+        m_star_val = conditional_mean_function(t/T, X_tvar_2_T[t - 1], X_tvar_2_T[t - 2])
+        X_tvar_2_T[t] = m_star_val + 1.0 * epsilon[t]
+        X[t] = np.array([X_tvar_2_T[t - 1], X_tvar_2_T[t - 2]])
+        t += 1
+
+    return X_tvar_2_T, X
+
+def _simulation_1_rep_process(d, T, device):
     t = 2
     epsilon = torch.normal(mean=0., std=1., size=(T,)).to(device)
-    X = torch.zeros((T,d)).to(device)
+    X = torch.zeros((T, d)).to(device)
     X_tvar_2_T = torch.zeros(T).to(device)
-    while t <= T-1 :
-        m_star_val = conditional_mean_function(t/T, X_tvar_2_T[t-1].to(device='cpu'), X_tvar_2_T[t-2].to(device='cpu'))
+
+    while t <= T - 1:
+        m_star_val = conditional_mean_function(t / T, X_tvar_2_T[t - 1].to(device='cpu'),
+                                               X_tvar_2_T[t - 2].to(device='cpu'))
         X_tvar_2_T[t] = m_star_val.to(device) + 1.0 * epsilon[t]
         X[t] = torch.tensor([X_tvar_2_T[t - 1], X_tvar_2_T[t - 2]])
         t += 1
-            
+
     return X_tvar_2_T, X
+
 
 def simulation_L_rep_process(d, times_t, times_T, n_replications, device):
     tic = datetime.now()
@@ -111,9 +138,9 @@ def simulation_L_rep_process(d, times_t, times_T, n_replications, device):
 
     for T in times_T:
         for replication in range(n_replications):
-            X_tvar_2_T, X = simulation_1_rep_process(d, T, device)
-            X_tvar_2_replications[f"T:{T}"][replication] = X_tvar_2_T
-            X_dict[f"T:{T}"][str(replication)] = X
+            X_tvar_2_T, X = simulation_1_rep_process(d, T) #, device # TDOO
+            X_tvar_2_replications[f"T:{T}"][replication] = torch.from_numpy(X_tvar_2_T).to(device) # TODO
+            X_dict[f"T:{T}"][str(replication)] = torch.from_numpy(X).to(device) # TODO
 
     X_tvar_2 = TensorDict(
     {f"t:{t}_T:{T}":torch.empty(n_replications, dtype=torch.float) for t in times_t for T in times_T},
@@ -130,21 +157,20 @@ def simulation_L_rep_process(d, times_t, times_T, n_replications, device):
     return X_tvar_2, X_tvar_2_replications, X_dict
 
 
-def bandwidth(d, T, lambda_=1 / 12):
-    xi = 0.4 / (2 * (d + 1))
-    lambda_ = 1 / 12
+def bandwidth(d, T, lambda_=1.):
+    xi = 0.3 / ((d + 1))
     bandwidth = lambda_ * T ** (-xi)
     return bandwidth
 
 
-def computation_weights(d, times_t, times_T, n_replications, X_dict, process, time_kernel, space_kernel, path_dicts,
+def computation_weights(d, lambda_, times_t, times_T, n_replications, X_dict, process, time_kernel, space_kernel, path_dicts,
                         device):
     tic = datetime.now()
     print('-' * 100)
     print(f"Running computation weights starts at {tic} ...")
 
     gaussian_kernel = {
-        f"T:{T}": Kernel(T=T, bandwidth=bandwidth(d, T), space_kernel=space_kernel, time_kernel=time_kernel,
+        f"T:{T}": Kernel(T=T, bandwidth=bandwidth(d, T, lambda_), space_kernel=space_kernel, time_kernel=time_kernel,
                          device=device) for T in times_T
     }
 
@@ -195,7 +221,7 @@ def empirical_cdf(times_t, times_T, X_tvar_2, device):
     return empirical_cdf_vals
 
 
-def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replications, gaussian_weights_tensor,
+def wasserstein_distances(lambda_, times_t, times_T, n_replications, X_tvar_2_replications, gaussian_weights_tensor,
                           empirical_cdf_vals, process, time_kernel, space_kernel, path_dicts, device, pplot=None):
     tic = datetime.now()
     print('-' * 100)
@@ -221,11 +247,6 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replication
         batch_size=[],
         device='cpu',
     )
-    for t in times_t:
-        for T in times_T:
-            x_rep[f"t:{t}_T:{str(T)}"] = torch.zeros((n_replications, T + 1))
-            y_rep[f"t:{t}_T:{str(T)}"] = torch.zeros((n_replications, T + 1))
-            wasserstein_distances[f"t:{t}_T:{T}"] = {}
 
     for replication in range(n_replications):
         for t in times_t:
@@ -278,7 +299,7 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replication
         for T in times_T:
             wass_times_t[f"t:{t}"].append(wass_distances_empirical_meanNW[f"t:{t}_T:{T}"])
 
-    dict_name = f"wass_times_t_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}.pkl"
+    dict_name = f"wass_times_t_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}_lambda_={lambda_}.pkl"
     with open(os.path.join(path_dicts, dict_name), 'wb') as f:
         pickle.dump(wass_times_t, f)
 
@@ -287,9 +308,9 @@ def wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replication
     return wass_times_t
 
 
-def plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs,
+def plot_results(lambda_, times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs,
                  show=False):
-    figure_name = f"torch_wassdistance_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}.png"
+    figure_name = f"torch_wassdistance_{process}_TimeKernel{time_kernel}_SpaceKernel{space_kernel}_L={n_replications}_lambda_={lambda_}.png"
 
     fig = plt.figure(figsize=(8, 4))
 
@@ -319,32 +340,42 @@ def main():
         device = torch.device("cpu")
 
     device = torch.device("cpu")
+
     path_figs = '../results/figs'
     path_dicts = '../results/dicts'
     process = 'GaussiantvAR(2)'
 
     time_kernel = "uniform"
-    space_kernel = "gaussian"
+    # space_kernel = "biweight"
+
+    # time_kernel = "uniform"
+    # space_kernel = "gaussian"
+
+    space_kernel = "silverman"
+
     d = 2
     test = True
+    lambda_ = 0.25
 
     times_t, times_T, n_replications = running_test(test, device)
 
     X_tvar_2, X_tvar_2_replications, X_dict = simulation_L_rep_process(d, times_t, times_T, n_replications, device)
 
-    gaussian_weights_tensor = computation_weights(d, times_t, times_T, n_replications, X_dict, process, time_kernel,
+    # exit()
+
+    gaussian_weights_tensor = computation_weights(d, lambda_, times_t, times_T, n_replications, X_dict, process, time_kernel,
                                                   space_kernel, path_dicts, device)
 
     empirical_cdf_vals = empirical_cdf(times_t, times_T, X_tvar_2, device)
 
-    times_t = times_t.detach().cpu().numpy()
-    times_T = times_T.detach().cpu().numpy()
+    # times_t = times_t.detach().cpu().numpy()
+    # times_T = times_T.detach().cpu().numpy()
 
-    wass_times_t = wasserstein_distances(times_t, times_T, n_replications, X_tvar_2_replications,
+    wass_times_t = wasserstein_distances(lambda_, times_t, times_T, n_replications, X_tvar_2_replications,
                                          gaussian_weights_tensor, empirical_cdf_vals, process, time_kernel,
                                          space_kernel, path_dicts, device)
 
-    plot_results(times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs)
+    plot_results(lambda_, times_t, times_T, n_replications, wass_times_t, process, time_kernel, space_kernel, path_figs)
 
 
 if __name__ == '__main__':
