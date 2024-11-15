@@ -1,9 +1,8 @@
 # Author: Mokhtar Z. Alaya <alayaelm@utc.fr>
 # License:
 
-import numpy as np
 import torch
-import functorch
+
 
 from sklearn.base import BaseEstimator
 
@@ -49,8 +48,7 @@ def space_kernel(kernel, x, Xt, bandwidth, device=None):
     x_Xt_scaled = (x - Xt) / bandwidth
     vectorize_kernel = torch.func.vmap(kernel)
     kernel_vec_val = vectorize_kernel(x_Xt_scaled.to(device))
-
-    return torch.prod(kernel_vec_val)
+    return torch.prod(kernel_vec_val, dim=-1)
 
 class Kernel(BaseEstimator):
     def __init__(
@@ -90,12 +88,18 @@ class Kernel(BaseEstimator):
             raise ValueError("Kernel type not supported")
 
     def fit(self, x, t):
+        # Generate time indices for all points
+        a = torch.arange(self.T, dtype=torch.int, device=self.device)
 
-        time_vals = [time_kernel(self.tkernel_name, a/self.T, t/self.T, self.bandwidth, self.device) for a in range(self.T)]
+        # Calculate time kernel values in a vectorized manner
+        time_vals = time_kernel(self.tkernel_name, a / self.T, t / self.T, self.bandwidth)
 
-        space_vals = [space_kernel(self.skernel_name, x[t], x[a], self.bandwidth, self.device) for a in range(self.T)]
+        # Calculate space kernel values in a vectorized manner
+        space_vals = space_kernel(self.skernel_name, x[t], x, self.bandwidth)
 
-        ts_vals = torch.tensor(time_vals) * torch.tensor(space_vals)
+        # Calculate the combined kernel values
+        ts_vals = time_vals * space_vals
 
+        # Normalize the weights
         weights_t = ts_vals / ts_vals.sum()
         return weights_t.to(self.device)
