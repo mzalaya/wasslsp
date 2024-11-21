@@ -68,8 +68,8 @@ def running_test(test, device):
             10000: [4800, 4830, 4860, 4890, 4910, 4940, 4970, 5000, 5030, 5060, 5090, 5110, 5140, 5170, 5200],
             15000: [7200, 7240, 7290, 7330, 7370, 7410, 7460, 7500, 7540, 7580, 7630, 7670, 7710, 7760, 7800],
         }
-        n_replications = 1000
-        iterations = 100
+        n_replications = 10
+        iterations = 2
 
     else:
         times_T = [5, 10]
@@ -528,7 +528,7 @@ def main():
 
     device = torch.device("cpu")
 
-    ### Generating LSP
+    ### Generating L replications of LSP
     output_dir = "simulation_results"
     os.makedirs(output_dir, exist_ok=True)
 
@@ -539,12 +539,12 @@ def main():
     times_t_dict, times_T, n_replications, iterations = running_test(test, device)
     X_tvar_2, X_tvar_2_replications, X_dict = simulation_L_rep_process(d, times_t_dict, times_T, n_replications, device, output_dir, iterations)
 
-    ### Weights calculation
+    ### Weights calculation for NW Conditional CDFs
     input_dir = "simulation_results"
     output_dir = "gaussian_weights_output"
     os.makedirs(output_dir, exist_ok=True)
 
-    process = 'GaussiantvAR(1)'
+    process = 'GaussiantvAR(2)'
     time_kernel = "uniform"
     space_kernel = "gaussian"
     gaussian_weights = computation_weights(d, lambda_, times_t_dict, times_T, iterations, n_replications, X_dict, 
@@ -554,7 +554,7 @@ def main():
     input_dir = "simulation_results"
     empirical_cdfs_iterations = empirical_cdf(times_t_dict, times_T, device, iterations, input_dir, X_tvar_2)
 
-    ### Wasserstein distances
+    ### Wasserstein distances between Average NW Conditional CDF and Empirical CDF
     input_dir = "simulation_results"
     input_dir_weights = "gaussian_weights_output"
     output_dir = "GaussiantvAR2_Wass"
@@ -570,15 +570,15 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
     wass_distances_stats = wass_stats(input_dir, output_dir, times_T, times_t_dict, iterations, wass_distances_empirical_meanNW_iterations)
 
-
     ### Plot mstar and sample time plot for T=1000
     T_samples = 1000
     plot_m_star(process, T_samples)
     plot_1_rep_process(process, d, T_samples, device)
 
-    ### Plot of results
+    ### Plot of Wasserstein distances at different t/T
     input_dir = "GaussiantvAR2WassStats"
     plot_results(times_t_dict, times_T, n_replications, iterations, process, wass_distances_stats, time_kernel, space_kernel, input_dir)
+    
 
 
 if __name__ == '__main__':

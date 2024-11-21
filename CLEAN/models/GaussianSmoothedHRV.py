@@ -70,7 +70,7 @@ def running_test(test, device):
         T = data.shape[0]
         times_t = [7950, 8080, 8150, 8390, 8500, 8650, 8900, 8960]
         times_sigma = [1, 1e-1, 1e-2, 1e-3, 1e-4]
-        n_replications = 1000
+        n_replications = 10
         iterations = 1
     else:
         T = 100
@@ -531,7 +531,7 @@ def main():
 
     device = torch.device("cpu")
 
-    ### Generating LSP
+    ### Generating L replications of Gaussian-smoothed dataset
     output_dir = "simulation_results"
     os.makedirs(output_dir, exist_ok=True)
 
@@ -542,7 +542,7 @@ def main():
     data, times_t, T, n_replications, times_sigma, iterations = running_test(test, device)
     X_real, X_real_replications, X_dict = simulation_L_rep_real(data, T, d, times_t, n_replications, device, output_dir, iterations, times_sigma)
 
-    ### Weights calculation
+    ### Weights calculation for NW Conditional CDFs
     input_dir = "simulation_results"
     output_dir = "gaussian_weights_output"
     os.makedirs(output_dir, exist_ok=True)
@@ -556,7 +556,7 @@ def main():
     input_dir = "simulation_results"
     empirical_cdfs_iterations = empirical_cdf(times_t, times_sigma, device, iterations, input_dir, X_real)
 
-    ### Wasserstein distances
+    ### Wasserstein distances between Average NW Conditional CDF and Empirical CDF
     input_dir = "simulation_results"
     input_dir_weights = "gaussian_weights_output"
     output_dir = "BabyECG_Wass"
@@ -566,10 +566,12 @@ def main():
                                                                        gaussian_weights, empirical_cdfs_iterations, X_real_replications, 
                                                                        input_dir, input_dir_weights, output_dir, device, pplot=None)
     
-    ### Plot 3 Gaussian-smoothed data
+    
+    ### Plot 3 sample Gaussian-smoothed data
     sigma_fix = 1.0
     n_replications_fix = 3
     plot_sample_noised(data, T, sigma_fix, n_replications_fix)
+
 
     ### Plot 3 Sample NW CDF Estimators at Fixed t and Fixed Sigma
     input_dir = "simulation_results"
@@ -580,10 +582,12 @@ def main():
     y_rep = {}
     plot_nw_cdf_estimators(x_rep, y_rep, t_fixed, sigma_fix, n_replications_fix, T, iterations, input_dir_weights, input_dir)
 
-    
-    ### Plot of results
+    ### Plot of Wasserstein distances at different t/T
     input_dir = "BabyECG_Wass"
     plot_results(times_t, times_sigma, n_replications, input_dir, T, iterations, wass_distances_empirical_meanNW_iterations)
+
+
+
 
     
 
