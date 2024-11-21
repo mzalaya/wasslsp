@@ -70,7 +70,7 @@ def running_test(test, device):
         T = data.shape[0]
         times_t = [3850, 3920, 3990, 4060, 4130, 4200, 4280, 4350]
         times_sigma = [1, 1e-1, 1e-2, 1e-3, 1e-4]
-        n_replications = 10
+        n_replications = 1000
         iterations = 1
     else:
         T = 100
