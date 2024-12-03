@@ -3,15 +3,18 @@
 
 import torch
 
+import numpy as np
+import torch
+import functorch
 
 from sklearn.base import BaseEstimator
 
-from src.torch.utils import (
-uniform, rectangle, triangle,
-epanechnikov, biweight, tricube,
-gaussian, silverman
-)
 
+from src.torch.utils import (
+    uniform, rectangle, triangle,
+    epanechnikov, biweight, tricube,
+    gaussian, silverman
+)
 
 VALID_KERNELS_LIST = [
     "uniform",
@@ -24,31 +27,30 @@ VALID_KERNELS_LIST = [
     "silverman",
 ]
 
-def time_kernel(kernel, aT, tT, bandwidth, device=None):
-    """
-    Time kernel
-    :param kernel:
-    :param aT:
-    :param tT:
-    :param bandwidth:
-    :return:
-    """
-    atT_scaled = (tT - aT) / bandwidth
-    return kernel(atT_scaled, device)
-
-def space_kernel(kernel, x, Xt, bandwidth, device=None):
+def space_kernel(kernel, x, Xt, bandwidth):
     """
     Space kernel
     :param kernel: function
     :param x: single point in R^d
-    :param Xt: single data point in R^d at time t
+    :param Xt: data points in R^d at time t (batched)
     :param bandwidth: float
     :return:
     """
     x_Xt_scaled = (x - Xt) / bandwidth
-    vectorize_kernel = torch.func.vmap(kernel)
-    kernel_vec_val = vectorize_kernel(x_Xt_scaled.to(device))
+    kernel_vec_val = torch.vmap(kernel)(x_Xt_scaled)
     return torch.prod(kernel_vec_val, dim=-1)
+
+def time_kernel(kernel, aT, tT, bandwidth):
+    """
+    Time kernel
+    :param kernel: function
+    :param aT: scaled time values (batched)
+    :param tT: target time value
+    :param bandwidth: float
+    :return:
+    """
+    atT_scaled = (tT - aT) / bandwidth
+    return kernel(atT_scaled)
 
 class Kernel(BaseEstimator):
     def __init__(
@@ -60,7 +62,7 @@ class Kernel(BaseEstimator):
             space_kernel="gaussian",
             time_kernel="gaussian",
             metric="euclidean",
-            device=None,
+            device="cpu",
             VALID_KERNELS_DIC={
                 "uniform": uniform,
                 "rectangle": rectangle,
@@ -75,8 +77,8 @@ class Kernel(BaseEstimator):
         self.T = T
         self.d = d
         self.bandwidth = bandwidth
-        self.time_kernel = time_kernel
         self.space_kernel = space_kernel
+        self.time_kernel = time_kernel
         self.metric = metric
         self.device = device
         self.VALID_KERNELS_DIC = VALID_KERNELS_DIC
@@ -89,7 +91,7 @@ class Kernel(BaseEstimator):
 
     def fit(self, x, t):
         # Generate time indices for all points
-        a = torch.arange(self.T, dtype=torch.int, device=self.device)
+        a = torch.arange(self.T, dtype=torch.float32, device=self.device)
 
         # Calculate time kernel values in a vectorized manner
         time_vals = time_kernel(self.tkernel_name, a / self.T, t / self.T, self.bandwidth)
