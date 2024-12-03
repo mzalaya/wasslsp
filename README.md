@@ -9,11 +9,11 @@ This repository includes the implementation experiments in the paper
 > 
 ## Introduction
 A brief introduction about the folders and files:
-* `data/`:
+* `data/`: locally stationary real-world datasets.
 
 * `src/`: methods and implementations.
     * `kernels.py`: 
-    * `utils.py`: standard kernels in torch-mode calls
+    * `utils.py`: standard kernels in torch-mode calls.
 
 * `models/`: python files contains all the used illustrated models.
 
