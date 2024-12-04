@@ -5,7 +5,7 @@ This repository includes the implementation experiments in the paper
 > *Bounds in Wasserstein Distance for Locally Stationary Processes*
 > 
 > by Jan N. Tinio, Mokhtar Z. Alaya and Salim Bouzebda
-> arXiv link: TODO
+> arXiv link: arXiv/6042737
 > 
 ## Introduction
 A brief introduction about the folders and files:
